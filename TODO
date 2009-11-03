@@ -1,1 +1,9 @@
-make simple chat register new users
+1   registration
+1.1 #reg <uid> <pw> <email>
+1.2 "uid has already been used by another user. Please choose another uid."
+1.3 "email already been used by another user. Please choose another email or request to send forgotten uid and/or pw."
+1.4 "Registration accepted. Please keep your uid and pw in a safe and secure location for future reference."
+2   lost user/pass
+2.1 #regInfo <email>
+2.2 "Sorry, <email> does not exist in our records. Please use the email address with which the account has been registered, or register another account."
+2.2 "An email will be sent to the email address <email> giving the uid and pw associated with that account."

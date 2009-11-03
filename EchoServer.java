@@ -83,7 +83,30 @@ public class EchoServer extends AbstractServer
       }
       client.setInfo("loginID", msg.toString().substring(7));
     }
-    else 
+    else if (msg.toString().toLowerCase().startsWith("#reg ") // might want to clean up the if nest. prof ferens said he would give us pattern.
+    {
+      // register uid
+      String[] commands = msg.split(" ");
+      if (commands.length != 4)
+      {
+        client.sendToClient("usage: #reg <uid> <pw> <email>");
+        return;
+      }
+
+      // check if uid exists
+      // "uid has already been used by another user. Please choose another uid."
+      //
+      // check if email already used
+      // "email already been used by another user. Please choose another email or request to send forgotten uid and/or pw."
+      //
+      // register user
+      // "Registration accepted. Please keep your uid and pw in a safe and secure location for future reference."
+    }
+    else if (msg.toString().toLowerCase().startsWith("#regInfo")
+    {
+      // email user info
+    }
+    else
     {
       if (client.getInfo("loginID") == null)
       {

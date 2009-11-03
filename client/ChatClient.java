@@ -185,6 +185,10 @@ public class ChatClient extends AbstractClient
     {
       clientUI.display("Current port: " + Integer.toString(getPort()));
     }
+    else if (message.toLowerCase().startsWith("#reg")
+    {
+      sendToServer(message);
+    }
   }
   
   /**
