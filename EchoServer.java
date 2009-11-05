@@ -6,6 +6,8 @@ import java.io.*;
 import ocsf.server.*;
 import common.*;
 
+import java.util.*;
+
 /**
  * This class overrides some of the methods in the abstract 
  * superclass in order to give more functionality to the server.
@@ -30,6 +32,16 @@ public class EchoServer extends AbstractServer
    * the display method in the client.
    */
   ChatIF serverUI;
+
+  /**
+   * HashMaps to store the registered users.
+   * emails uses the email as the key with the uid as the value.
+   * uids uses the uid as the key with the password as the value.
+   */
+  private HashMap emails = new HashMap(101);
+  private HashMap uids = new HashMap(101);
+  
+
 
   
   //Constructors ****************************************************
@@ -83,28 +95,94 @@ public class EchoServer extends AbstractServer
       }
       client.setInfo("loginID", msg.toString().substring(7));
     }
-    else if (msg.toString().toLowerCase().startsWith("#reg ") // might want to clean up the if nest. prof ferens said he would give us pattern.
+    else if (msg.toString().toLowerCase().startsWith("#reg ")) // might want to clean up the if nest. Use command pattern
     {
       // register uid
-      String[] commands = msg.split(" ");
+      String[] commands = ((String)msg).split(" ");
       if (commands.length != 4)
       {
-        client.sendToClient("usage: #reg <uid> <pw> <email>");
+        try
+        {
+          client.sendToClient("usage: #reg <uid> <pw> <email>");
+        }
+        catch(IOException e) {}
         return;
       }
 
       // check if uid exists
       // "uid has already been used by another user. Please choose another uid."
-      //
+
+      if (uids.containsKey(commands[1]))
+      {
+        // notify user that uid is taken
+        try
+        {
+          client.sendToClient(commands[1] + " has already been used by another user. Please choose another uid.");
+        }
+        catch(IOException e) {}
+        return;
+      }
+      
       // check if email already used
       // "email already been used by another user. Please choose another email or request to send forgotten uid and/or pw."
-      //
+      
+      if (emails.containsKey(commands[3]))
+      {
+        // notify user that uid is taken
+        try
+        {
+          client.sendToClient(commands[3] + " has already been used by another user. Please choose another email or request "
+                                          + "to send forgotten uid and/or pw.");
+        }
+        catch(IOException e) {}
+        return;
+      }
+
       // register user
       // "Registration accepted. Please keep your uid and pw in a safe and secure location for future reference."
+
+      emails.put(commands[3], commands[1]);
+      uids.put(commands[1], commands[2]);
+      // notify user that uid and pass is stored
+      try
+      {
+        client.sendToClient("Registration accepted. Please keep your uid and pw in a safe "
+                          + "and secure location for future reference.");
+      }
+      catch(IOException e) {}
     }
-    else if (msg.toString().toLowerCase().startsWith("#regInfo")
+    else if (msg.toString().startsWith("#regInfo"))
     {
       // email user info
+      String[] commands = ((String)msg).split(" ");
+      if (commands.length != 4)
+      {
+        try
+        {
+          client.sendToClient("usage: #regInfo <email>");
+        }
+        catch(IOException e) {}
+        return;
+      }
+
+      // check to see if email is registered
+      if (emails.containsKey(commands[3]))
+      {
+        try
+        {
+          client.sendToClient("Sorry, " + commands[3] + " does not exist in our records. Please use the " +
+            "email address with which the account has been registered, or register another account.");
+        }
+        catch(IOException e){}
+        return;
+      }
+
+      try
+      {
+        client.sendToClient("An email will be sent to the email address " + commands[3] + " giving the " + 
+                            "uid and pw associated with that account.");
+      }
+      catch (IOException e) {}
     }
     else
     {
@@ -295,6 +373,45 @@ public class EchoServer extends AbstractServer
     System.exit(0);
   }
 
+  /**
+   * This method sends an email.
+   * Method borrowed from:
+   *    http://www.javacommerce.com/displaypage.jsp?name=javamail.sql&id=18274
+   */
+  /*
+  public void postMail(String[] recipients, String subject, String message,
+    String from) throws MessagingException
+  {
+    boolean debug = false;
+
+    //Set the host smtp address
+    Properties props = new Properties();
+    props.put("mail.smtp.host", "smtp.ee.umanitoba.ca");
+
+    //create some properties and get the default session
+    Session session = Session.getDefaultInstance(props, null);
+    session.setDebug(debug);
+
+    //create a message
+    Message msg = new MimeMessage(session);
+
+    // set the from and to addresses
+    InternetAddress addressFrom = new InternetAddress(from);
+    msg.setFrom(addressFrom);
+
+    InternetAddress[] addressTo = new InternetAddress[recipients.length];
+    for (int i = 0; i < recipients.length; i++)
+    {
+      addressTo[i] = new InternetAddress(recipients[i]);
+    }
+    msg.setRecipients(Message.RecipientType.TO, addressTo);
+
+    // setting the subject and content type
+    mst.setSubject(subject);
+    msg.setContent(message, "text/plain");
+    Transport.send(msg);
+  }
+*/
 
   //Class methods ***************************************************
   
